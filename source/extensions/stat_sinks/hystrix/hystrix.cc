@@ -299,10 +299,8 @@ Http::Code HystrixSink::handlerHystrixEventStream(absl::string_view,
       admin_stream.getDecoderFilterCallbacks();
 
   // Disable chunk-encoding in HTTP/1.x.
-  // TODO: This request should be propagated to codecs via API, instead of using a pseudo-header.
-  //       See: https://github.com/envoyproxy/envoy/issues/9749
   if (stream_decoder_filter_callbacks.streamInfo().protocol() < Http::Protocol::Http2) {
-    response_headers.setNoChunks(0);
+    admin_stream.http1StreamEncoderOptions().value().get().disableChunkEncoding();
   }
 
   registerConnection(&stream_decoder_filter_callbacks);
