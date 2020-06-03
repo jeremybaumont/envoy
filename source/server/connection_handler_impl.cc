@@ -140,7 +140,7 @@ ConnectionHandlerImpl::ActiveTcpListener::ActiveTcpListener(ConnectionHandlerImp
     : ActiveTcpListener(
           parent,
           parent.dispatcher_.createListener(config.listenSocketFactory().getListenSocket(), *this,
-                                            config.bindToPort()),
+                                            config.listenBacklog(), config.bindToPort()),
           config) {}
 
 ConnectionHandlerImpl::ActiveTcpListener::ActiveTcpListener(ConnectionHandlerImpl& parent,

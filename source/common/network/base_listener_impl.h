@@ -20,7 +20,7 @@ public:
    * @param socket the listening socket for this listener. It might be shared
    * with other listeners if all listeners use single listen socket.
    */
-  BaseListenerImpl(Event::DispatcherImpl& dispatcher, SocketSharedPtr socket);
+  BaseListenerImpl(Event::DispatcherImpl& dispatcher, SocketSharedPtr socket, u_int32_t listen_backlog);
 
 protected:
   virtual Address::InstanceConstSharedPtr getLocalAddress(os_fd_t fd);
@@ -28,6 +28,7 @@ protected:
   Address::InstanceConstSharedPtr local_address_;
   Event::DispatcherImpl& dispatcher_;
   const SocketSharedPtr socket_;
+  const u_int32_t listen_backlog_;
 };
 
 } // namespace Network

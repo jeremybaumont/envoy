@@ -47,9 +47,10 @@ void ListenerImpl::listenCallback(evconnlistener*, evutil_socket_t fd, sockaddr*
       std::make_unique<AcceptedSocketImpl>(std::move(io_handle), local_address, remote_address));
 }
 
-void ListenerImpl::setupServerSocket(Event::DispatcherImpl& dispatcher, Socket& socket) {
+void ListenerImpl::setupServerSocket(Event::DispatcherImpl& dispatcher, Socket& socket,
+                                     u_int32_t listen_backlog, bind_to_port) {
   listener_.reset(
-      evconnlistener_new(&dispatcher.base(), listenCallback, this, 0, -1, socket.ioHandle().fd()));
+      evconnlistener_new(&dispatcher.base(), listenCallback, this, 0, listen_backlog, socket.ioHandle().fd()));
 
   if (!listener_) {
     throw CreateListenerException(
@@ -66,10 +67,10 @@ void ListenerImpl::setupServerSocket(Event::DispatcherImpl& dispatcher, Socket& 
 }
 
 ListenerImpl::ListenerImpl(Event::DispatcherImpl& dispatcher, SocketSharedPtr socket,
-                           ListenerCallbacks& cb, bool bind_to_port)
-    : BaseListenerImpl(dispatcher, std::move(socket)), cb_(cb), listener_(nullptr) {
+                           ListenerCallbacks& cb, u_int32_t listen_backlog, bool bind_to_port)
+    : BaseListenerImpl(dispatcher, std::move(socket), listen_backlog), cb_(cb), listener_(nullptr) {
   if (bind_to_port) {
-    setupServerSocket(dispatcher, *socket_);
+    setupServerSocket(dispatcher, *socket_, listen_backlog);
   }
 }
 

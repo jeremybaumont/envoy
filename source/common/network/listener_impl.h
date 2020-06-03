@@ -12,13 +12,13 @@ namespace Network {
 class ListenerImpl : public BaseListenerImpl {
 public:
   ListenerImpl(Event::DispatcherImpl& dispatcher, SocketSharedPtr socket, ListenerCallbacks& cb,
-               bool bind_to_port);
+               u_int32_t listen_backlog, bool bind_to_port);
 
   void disable() override;
   void enable() override;
 
 protected:
-  void setupServerSocket(Event::DispatcherImpl& dispatcher, Socket& socket);
+  void setupServerSocket(Event::DispatcherImpl& dispatcher, Socket& socket, u_int32_t listen_backlog);
 
   ListenerCallbacks& cb_;
 

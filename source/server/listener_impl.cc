@@ -55,10 +55,11 @@ ListenSocketFactoryImpl::ListenSocketFactoryImpl(ListenerComponentFactory& facto
                                                  Network::Address::InstanceConstSharedPtr address,
                                                  Network::Address::SocketType socket_type,
                                                  const Network::Socket::OptionsSharedPtr& options,
+                                                 u_int32_t listen_backlog,
                                                  bool bind_to_port,
                                                  const std::string& listener_name, bool reuse_port)
     : factory_(factory), local_address_(address), socket_type_(socket_type), options_(options),
-      bind_to_port_(bind_to_port), listener_name_(listener_name), reuse_port_(reuse_port) {
+      listen_backlog_(listen_backlog), bind_to_port_(bind_to_port), listener_name_(listener_name), reuse_port_(reuse_port) {
 
   bool create_socket = false;
   if (local_address_->type() == Network::Address::Type::Ip) {
@@ -222,6 +223,7 @@ ListenerImpl::ListenerImpl(const envoy::config::listener::v3::Listener& config,
                            uint64_t hash, uint32_t concurrency)
     : parent_(parent), address_(Network::Address::resolveProtoAddress(config.address())),
       bind_to_port_(PROTOBUF_GET_WRAPPED_OR_DEFAULT(config.deprecated_v1(), bind_to_port, true)),
+      listen_backlog_(PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, listen_backlog, -1)),
       hand_off_restored_destination_connections_(
           PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, hidden_envoy_deprecated_use_original_dst, false)),
       per_connection_buffer_limit_bytes_(
@@ -283,6 +285,7 @@ ListenerImpl::ListenerImpl(const ListenerImpl& origin,
                            uint64_t hash, uint32_t concurrency)
     : parent_(parent), address_(origin.address_),
       bind_to_port_(PROTOBUF_GET_WRAPPED_OR_DEFAULT(config.deprecated_v1(), bind_to_port, true)),
+      listen_backlog_(PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, listen_backlog, -1)),
       hand_off_restored_destination_connections_(
           PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, hidden_envoy_deprecated_use_original_dst, false)),
       per_connection_buffer_limit_bytes_(

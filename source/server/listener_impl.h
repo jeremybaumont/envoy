@@ -41,7 +41,8 @@ public:
   ListenSocketFactoryImpl(ListenerComponentFactory& factory,
                           Network::Address::InstanceConstSharedPtr address,
                           Network::Address::SocketType socket_type,
-                          const Network::Socket::OptionsSharedPtr& options, bool bind_to_port,
+                          const Network::Socket::OptionsSharedPtr& options,
+                          u_int32_t listen_backlog, bool bind_to_port,
                           const std::string& listener_name, bool reuse_port);
 
   // Network::ListenSocketFactory
@@ -76,6 +77,7 @@ private:
   Network::Address::SocketType socket_type_;
   const Network::Socket::OptionsSharedPtr options_;
   bool bind_to_port_;
+  u_int32_t listen_backlog_;
   const std::string& listener_name_;
   const bool reuse_port_;
   Network::SocketSharedPtr socket_;
@@ -283,6 +285,9 @@ public:
   Network::FilterChainFactory& filterChainFactory() override { return *this; }
   Network::ListenSocketFactory& listenSocketFactory() override { return *socket_factory_; }
   bool bindToPort() override { return bind_to_port_; }
+  uint32_t listenBacklog() const override {
+    return listen_backlog_;
+  }
   bool handOffRestoredDestinationConnections() const override {
     return hand_off_restored_destination_connections_;
   }
@@ -357,6 +362,7 @@ private:
 
   Network::ListenSocketFactorySharedPtr socket_factory_;
   const bool bind_to_port_;
+  const u_int32_t listen_backlog_;
   const bool hand_off_restored_destination_connections_;
   const uint32_t per_connection_buffer_limit_bytes_;
   const uint64_t listener_tag_;
