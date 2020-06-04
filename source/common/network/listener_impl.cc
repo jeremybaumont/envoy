@@ -48,8 +48,25 @@ void ListenerImpl::listenCallback(evconnlistener*, evutil_socket_t fd, sockaddr*
 }
 
 void ListenerImpl::setupServerSocket(Event::DispatcherImpl& dispatcher, Socket& socket) {
+#if defined(__linux__)
+  // On Linux, pass in -1 to the listen backlog to use net.core.somaxconn and allow runtime tuning.
+  // Default before Linux 5.4 is 128 which matches libevent hardcoded setting.
+  // Default on Linux 5.4 and later is 4096.
+  const int listen_backlog = -1;
+#elif
+  // Default non-Linux platforms to the libevent default of 128.
+  const int listen_backlog = 128;
+#endif
+
+  const Api::SysCallIntResult result =
+      Api::OsSysCallsSingleton::get().listen(socket.ioHandle().fd(), listen_backlog);
+  RELEASE_ASSERT(result.rc_ != -1,
+                 fmt::format("listen(2) failed, got error: {}", strerror(result.errno_)))
+
+  // Using 0 as backlog is equivalent to not call listen syscall again, see:
+  // https://github.com/libevent/libevent/blob/29cc8386a2f7911eaa9336692a2c5544d8b4734f/listener.c#L172
   listener_.reset(
-      evconnlistener_new(&dispatcher.base(), listenCallback, this, 0, -1, socket.ioHandle().fd()));
+      evconnlistener_new(&dispatcher.base(), listenCallback, this, 0, 0, socket.ioHandle().fd()));
 
   if (!listener_) {
     throw CreateListenerException(
